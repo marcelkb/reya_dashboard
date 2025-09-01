@@ -110,18 +110,54 @@ cols[1].metric(
 
 # Annualized funding rate chart with legend
 st.subheader("Annualized Funding Rate Over Time")
-annualized_chart = (
+
+# Set timestamp as index for rolling
+filtered_df = filtered_df.set_index("timestamp")
+
+filtered_df["funding_7d"] = (
+    filtered_df["fundingRateAnnualized"]
+    .rolling("7D").mean()
+    .reset_index(level=0, drop=True)
+)
+
+filtered_df["funding_30d"] = (
+    filtered_df["fundingRateAnnualized"]
+    .rolling("30D").mean()
+    .reset_index(level=0, drop=True)
+)
+
+# Reset index so Streamlit/Altair can use timestamp column again
+filtered_df = filtered_df.reset_index()
+
+# Map internal column names -> friendly labels
+rename_map = {
+    "fundingRateAnnualized": "Raw Funding Rate",
+    "funding_7d": "7D Avg",
+    "funding_30d": "30D Avg"
+}
+
+avg_chart = (
     alt.Chart(filtered_df)
-    .mark_line(point=True)
+    .transform_fold(
+        list(rename_map.keys()),
+        as_=["metric", "value"]
+    )
+    .transform_calculate(
+        metric_label=f"datum.metric == 'fundingRateAnnualized' ? 'Raw APY' : "
+                     f"datum.metric == 'funding_7d' ? '7D Avg' : '30D Avg'"
+    )
+    .mark_line(point=False)
     .encode(
-        x=alt.X("timestamp:T", axis=alt.Axis(format="%d.%m %H:%M")),  # 👈 24h format
-        y="fundingRateAnnualized:Q",
-        color="symbol:N",   # add symbol as legend
-        tooltip=["timestamp", "symbol", "fundingRateAnnualized"]
+        x=alt.X("timestamp:T", axis=alt.Axis(format="%d.%m %H:%M")),
+        y="value:Q",
+        color=alt.Color("metric_label:N", title="Metric"),
+        tooltip=["timestamp:T", "metric_label:N", "value:Q"]
     )
     .interactive()
 )
-st.altair_chart(annualized_chart, use_container_width=True)
+
+st.altair_chart(avg_chart, use_container_width=True)
+
 
 # Convert decimal (0.21) → percent (21.0)
 df_staking["stakeApy_pct"] = df_staking["stakeApy"] * 100
@@ -166,7 +202,7 @@ avg_chart = (
     )
     .mark_line(point=False)
     .encode(
-        x=alt.X("timestamp:T", axis=alt.Axis(format="%d.%m %H:%M")),  # 👈 24h format
+        x=alt.X("timestamp:T", axis=alt.Axis(format="%d.%m %H:%M")),
         y="value:Q",
         color=alt.Color("metric_label:N", title="Metric"),
         tooltip=["timestamp:T", "metric_label:N", "value:Q"]
@@ -182,7 +218,7 @@ funding_chart = (
     alt.Chart(filtered_df)
     .mark_line(point=True)
     .encode(
-        x=alt.X("timestamp:T", axis=alt.Axis(format="%d.%m %H:%M")),  # 👈 24h format
+        x=alt.X("timestamp:T", axis=alt.Axis(format="%d.%m %H:%M")),
         y="fundingRate:Q",
         color="symbol:N",   # add symbol as legend
         tooltip=["timestamp", "symbol", "fundingRate"]
