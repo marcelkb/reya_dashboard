@@ -4,14 +4,13 @@ import os
 import time
 
 from dotenv import load_dotenv
-from sdk import ReyaTradingClient, stake, TradingConfig
+from sdk import ReyaTradingClient, TradingConfig
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 
 # Create a logger for this module
-from exchange.Reya import Reya
-
+from ccxt_wrapper.Reya import Reya
 from peewee import (
     Model, CharField, DateTimeField, DecimalField, AutoField
 )
