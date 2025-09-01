@@ -180,6 +180,7 @@ st.altair_chart(avg_chart, use_container_width=True)
 st.subheader("Funding Rate Averages")
 
 # Set timestamp as index for rolling
+filtered_df = filtered_df.sort_values(["symbol", "timestamp"]).drop_duplicates(subset=["symbol", "timestamp"])
 filtered_df = filtered_df.set_index("timestamp")
 
 filtered_df["funding_7d"] = (
