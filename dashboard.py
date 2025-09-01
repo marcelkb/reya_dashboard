@@ -88,7 +88,7 @@ for i, symbol in enumerate(selected_symbols):
             value=annualized_str
         )
 
-st.subheader("📊 Latest RUSD APY")
+st.subheader("📊 Latest sRUSD APY")
 cols = st.columns(2)  # one column per symbol
 latest = df_staking.sort_values("timestamp").iloc[-1]
 
@@ -109,54 +109,19 @@ cols[1].metric(
 
 
 # Annualized funding rate chart with legend
-st.subheader("Annualized Funding Rate Over Time")
-
-# Set timestamp as index for rolling
-filtered_df = filtered_df.set_index("timestamp")
-
-filtered_df["funding_7d"] = (
-    filtered_df["fundingRateAnnualized"]
-    .rolling("7D").mean()
-    .reset_index(level=0, drop=True)
-)
-
-filtered_df["funding_30d"] = (
-    filtered_df["fundingRateAnnualized"]
-    .rolling("30D").mean()
-    .reset_index(level=0, drop=True)
-)
-
-# Reset index so Streamlit/Altair can use timestamp column again
-filtered_df = filtered_df.reset_index()
-
-# Map internal column names -> friendly labels
-rename_map = {
-    "fundingRateAnnualized": "Raw Funding Rate",
-    "funding_7d": "7D Avg",
-    "funding_30d": "30D Avg"
-}
-
-avg_chart = (
+st.subheader("Funding Rate Over Time")
+annualized_chart = (
     alt.Chart(filtered_df)
-    .transform_fold(
-        list(rename_map.keys()),
-        as_=["metric", "value"]
-    )
-    .transform_calculate(
-        metric_label=f"datum.metric == 'fundingRateAnnualized' ? 'Raw APY' : "
-                     f"datum.metric == 'funding_7d' ? '7D Avg' : '30D Avg'"
-    )
-    .mark_line(point=False)
+    .mark_line(point=True)
     .encode(
         x=alt.X("timestamp:T", axis=alt.Axis(format="%d.%m %H:%M")),
-        y="value:Q",
-        color=alt.Color("metric_label:N", title="Metric"),
-        tooltip=["timestamp:T", "metric_label:N", "value:Q"]
+        y="fundingRateAnnualized:Q",
+        color="symbol:N",   # add symbol as legend
+        tooltip=["timestamp", "symbol", "fundingRateAnnualized"]
     )
     .interactive()
 )
-
-st.altair_chart(avg_chart, use_container_width=True)
+st.altair_chart(annualized_chart, use_container_width=True)
 
 
 # Convert decimal (0.21) → percent (21.0)
@@ -211,6 +176,58 @@ avg_chart = (
 )
 
 st.altair_chart(avg_chart, use_container_width=True)
+
+st.subheader("Funding Rate Averages")
+
+# Set timestamp as index for rolling
+filtered_df = filtered_df.set_index("timestamp")
+
+filtered_df["funding_7d"] = (
+    filtered_df.groupby("symbol")["fundingRateAnnualized"]
+    .rolling("7D").mean()
+    .reset_index(level=0, drop=True)
+)
+
+filtered_df["funding_30d"] = (
+    filtered_df.groupby("symbol")["fundingRateAnnualized"]
+    .rolling("30D").mean()
+    .reset_index(level=0, drop=True)
+)
+
+# Reset index so Streamlit/Altair can use timestamp column again
+filtered_df = filtered_df.reset_index()
+
+# Melt for Altair (long format)
+avg_df = filtered_df.melt(
+    id_vars=["timestamp", "symbol"],
+    value_vars=["fundingRateAnnualized", "funding_7d", "funding_30d"],
+    var_name="metric",
+    value_name="value"
+)
+
+# Map column names to friendly labels
+metric_map = {
+    "fundingRateAnnualized": "Raw Funding Rate",
+    "funding_7d": "7D Avg",
+    "funding_30d": "30D Avg"
+}
+avg_df["metric_label"] = avg_df["metric"].map(metric_map)
+
+# Plot
+annualized_chart = (
+    alt.Chart(avg_df)
+    .mark_line(point=False)
+    .encode(
+        x=alt.X("timestamp:T", axis=alt.Axis(format="%d.%m %H:%M")),  # 24h format
+        y="value:Q",
+        color=alt.Color("symbol:N", title="Symbol"),
+        strokeDash="metric_label:N",  # different line style for raw/7d/30d
+        tooltip=["timestamp:T", "symbol:N", "metric_label:N", "value:Q"]
+    )
+    .interactive()
+)
+
+st.altair_chart(annualized_chart, use_container_width=True)
 
 # Funding rate chart with legend
 st.subheader("Hourly Funding Rate Over Time")
