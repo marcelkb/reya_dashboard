@@ -114,7 +114,7 @@ annualized_chart = (
     alt.Chart(filtered_df)
     .mark_line(point=True)
     .encode(
-        x="timestamp:T",
+        x=alt.X("timestamp:T", axis=alt.Axis(format="%d.%m %H:%M")),  # 👈 24h format
         y="fundingRateAnnualized:Q",
         color="symbol:N",   # add symbol as legend
         tooltip=["timestamp", "symbol", "fundingRateAnnualized"]
@@ -166,7 +166,7 @@ avg_chart = (
     )
     .mark_line(point=False)
     .encode(
-        x="timestamp:T",
+        x=alt.X("timestamp:T", axis=alt.Axis(format="%d.%m %H:%M")),  # 👈 24h format
         y="value:Q",
         color=alt.Color("metric_label:N", title="Metric"),
         tooltip=["timestamp:T", "metric_label:N", "value:Q"]
@@ -182,7 +182,7 @@ funding_chart = (
     alt.Chart(filtered_df)
     .mark_line(point=True)
     .encode(
-        x="timestamp:T",
+        x=alt.X("timestamp:T", axis=alt.Axis(format="%d.%m %H:%M")),  # 👈 24h format
         y="fundingRate:Q",
         color="symbol:N",   # add symbol as legend
         tooltip=["timestamp", "symbol", "fundingRate"]
