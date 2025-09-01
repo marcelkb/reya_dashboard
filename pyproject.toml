@@ -1,0 +1,12 @@
+[project]
+name = "reya-dashboard"
+version = "0.1.0"
+description = "Reya Dashboard"
+requires-python = ">=3.11"
+dependencies = [
+    "altair>=5.5.0",
+    "mysql-connector-python>=9.4.0",
+    "pandas>=2.3.2",
+    "python-dotenv>=1.1.1",
+    "streamlit>=1.49.1",
+]
