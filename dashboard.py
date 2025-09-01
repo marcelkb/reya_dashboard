@@ -1,21 +1,14 @@
-import os
-
 import streamlit as st
 import pandas as pd
 import altair as alt
-from dotenv import load_dotenv
 import mysql.connector
-import tomllib
 
-# Load secrets
-with open("secrets.toml", "rb") as f:
-    secrets = tomllib.load(f)
 
-DB_HOST = secrets["DB_HOST"]
-DB_PORT = secrets["DB_PORT"]
-DB_USER = secrets["DB_USER"]
-DB_PASSWORD = secrets["DB_PASSWORD"]
-DB_SCHEMA = secrets["DB_SCHEMA"]
+DB_HOST = st.secrets["DB_HOST"]
+DB_PORT = st.secrets["DB_PORT"]
+DB_USER = st.secrets["DB_USER"]
+DB_PASSWORD = st.secrets["DB_PASSWORD"]
+DB_SCHEMA = st.secrets["DB_SCHEMA"]
 
 st.set_page_config(page_title="Funding Rate Monitor", layout="wide")
 
