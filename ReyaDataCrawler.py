@@ -76,34 +76,37 @@ def main():
 
     while True:
         print("fetch funding rates:")
-        apy = exchange.get_current_stake_apy()
-        stakeApy = apy['apy']
-        price = apy['share_price']
-        Staking.create(timestamp=datetime.utcnow(),
-                        stakeApy=stakeApy,
-                    sharePrice=price)
-        print(f"stake APY: {stakeApy}, share price: {price}")
-        for symbol in symbols:
-            try:
-                funding = exchange.fetch_funding_rate(symbol)
+        try:
+            apy = exchange.get_current_stake_apy()
+            stakeApy = apy['apy']
+            price = apy['share_price']
+            Staking.create(timestamp=datetime.utcnow(),
+                            stakeApy=stakeApy,
+                        sharePrice=price)
+            print(f"stake APY: {stakeApy}, share price: {price}")
+            for symbol in symbols:
+                try:
+                    funding = exchange.fetch_funding_rate(symbol)
 
-                FundingRate.create(
-                    timestamp=datetime.utcnow(),
-                    symbol=symbol,
-                    ticker=funding['info'].get('ticker', ''),
-                    fundingRate=funding['info'].get('fundingRate', None),
-                    interval=funding.get('interval', ''),
-                    fundingDatetime=funding.get('fundingDatetime', ''),
-                    fundingRateAnnualized=funding['info'].get('fundingRateAnnualized', None),
-                )
+                    FundingRate.create(
+                        timestamp=datetime.utcnow(),
+                        symbol=symbol,
+                        ticker=funding['info'].get('ticker', ''),
+                        fundingRate=funding['info'].get('fundingRate', None),
+                        interval=funding.get('interval', ''),
+                        fundingDatetime=funding.get('fundingDatetime', ''),
+                        fundingRateAnnualized=funding['info'].get('fundingRateAnnualized', None),
+                    )
 
-                print(f"[{datetime.utcnow().isoformat()}] {symbol} funding rate: "
-                      f"{funding['info'].get('fundingRate', '')}@{funding.get('interval', '')}, "
-                      f"yearly: {funding['info'].get('fundingRateAnnualized', '')}%")
+                    print(f"[{datetime.utcnow().isoformat()}] {symbol} funding rate: "
+                          f"{funding['info'].get('fundingRate', '')}@{funding.get('interval', '')}, "
+                          f"yearly: {funding['info'].get('fundingRateAnnualized', '')}%")
 
-            except Exception as e:
-                print(f"Error fetching {symbol}: {e}")
-
+                except Exception as e:
+                    print(f"Error fetching {symbol}: {e}")
+        except Exception as e:
+            print(f"Error occured: {e}")
+            continue # dont sleep
         print("sleep 5min")
         time.sleep(300)
 
