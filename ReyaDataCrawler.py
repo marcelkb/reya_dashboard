@@ -105,8 +105,9 @@ def main():
                 except Exception as e:
                     print(f"Error fetching {symbol}: {e}")
         except Exception as e:
-            print(f"Error occured: {e}")
-            continue # dont sleep
+            print(f"Error occurred: {e}")
+            time.sleep(5)
+            continue # dont sleep long
         print("sleep 5min")
         time.sleep(300)
 
