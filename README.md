@@ -41,3 +41,5 @@ You can find it here:
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://reyadashboard.streamlit.app)
 
 <img width="2552" height="1217" alt="image" src="https://github.com/user-attachments/assets/286e2a9d-ae59-4bed-a6f1-6de3a763b1c9" />
+<img width="1620" height="784" alt="image" src="https://github.com/user-attachments/assets/99fbe009-b481-4cac-954f-dbe4d9a9ef8a" />
+
