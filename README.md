@@ -40,6 +40,8 @@ A dashboard for monitoring and analyzing **Reya Exchange** metrics.
 You can find it here: 
 [![Streamlit App](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://reyadashboard.streamlit.app)
 
+⚠️ Disclaimer: This data is for informational purposes only and should not be considered as financial advice.
+
 <img width="2539" height="1143" alt="image" src="https://github.com/user-attachments/assets/596ca499-8a4c-4dd5-9c52-342c7d0cec8f" />
 <img width="1632" height="865" alt="image" src="https://github.com/user-attachments/assets/97ad6597-a77d-48e3-b18f-89bbb3482546" />
 
