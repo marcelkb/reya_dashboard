@@ -10,6 +10,6 @@ dependencies = [
     "python-dotenv>=1.1.1",
     "streamlit>=1.49.1",
     "mariadb",
-    "st_aggrid",
+    "streamlit-aggrid",
     "plotly"
 ]
