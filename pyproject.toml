@@ -9,5 +9,7 @@ dependencies = [
     "pandas>=2.3.2",
     "python-dotenv>=1.1.1",
     "streamlit>=1.49.1",
-    "mariadb"
+    "mariadb",
+    "st_aggrid",
+    "plotly"
 ]
