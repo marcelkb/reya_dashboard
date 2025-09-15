@@ -5,7 +5,6 @@ import warnings
 import os
 import typing
 import logging
-from decouple import config
 from typing import Union, Literal
 
 try:
@@ -29,18 +28,11 @@ from io import StringIO
 # Track shown deprecation warnings to avoid repetition in Streamlit
 _shown_deprecation_warnings = set()
 
-_RELEASE = config("AGGRID_RELEASE", default=True, cast=bool)
 
-if not _RELEASE:
-    warnings.warn("WARNING: ST_AGGRID is in development mode.")
-    _component_func = components.declare_component(
-        "agGrid",
-        url="http://localhost:3001",
-    )
-else:
-    parent_dir = os.path.dirname(os.path.abspath(__file__))
-    build_dir = os.path.join(parent_dir, "frontend", "build")
-    _component_func = components.declare_component("agGrid", path=build_dir)
+
+parent_dir = os.path.dirname(os.path.abspath(__file__))
+build_dir = os.path.join(parent_dir, "frontend", "build")
+_component_func = components.declare_component("agGrid", path=build_dir)
 
 
 def AgGrid(

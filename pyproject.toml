@@ -15,5 +15,4 @@ dependencies = [
     "streamlit-aggrid",
     "python-decouple",
     "pyarrow",
-    
 ]
