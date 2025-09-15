@@ -13,6 +13,7 @@ A dashboard for monitoring and analyzing **Reya Exchange** metrics.
 - 📈 Current & historical **rUSD APY**
 - 💹 Current & historical **Funding Rates**
 - ⚡ Supported assets: **BTC**, **ETH**, **SOL**
+- 🚀 Dashboard showing arbitrage oportunities between different exchanges (cex and dex)
 
 ---
 
