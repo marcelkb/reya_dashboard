@@ -13,5 +13,7 @@ dependencies = [
     "plotly",
     "pillow",
     "streamlit-aggrid",
-    "decouple"
+    "python-decouple",
+    "pyarrow",
+    
 ]
