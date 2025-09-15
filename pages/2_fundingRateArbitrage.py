@@ -121,29 +121,29 @@ def find_best_arbitrage_opportunities(df):
         best_pos = positives.loc[positives["Rate"].idxmax()]
         best_neg = negatives.loc[negatives["Rate"].idxmin()]
 
-        # # Compare all positive vs negative exchanges
-        # for _, pos in positives.iterrows():
-        #     for _, neg in negatives.iterrows():
-        #         best_results.append({
-        #             "Symbol": symbol,
-        #             "Long Exchange": neg["Exchange"],
-        #             "Long Rate": neg["Rate"],
-        #             "Short Exchange": pos["Exchange"],
-        #             "Short Rate": pos["Rate"],
-        #             "Spread": pos["Rate"] - neg["Rate"]
-        #         })
-        best_results.append({
-            "Symbol": symbol,
-            "Long Exchange": best_neg["Exchange"],
-            "Long Rate (1h)": best_neg["Rate"],
-            "Long Rate (1Y)": best_neg["Yearly Rate"],
-            "Short Exchange": best_pos["Exchange"],
-            "Short Rate (1h)": best_pos["Rate"],
-            "Short Rate (1Y)": best_pos["Yearly Rate"],
-            "Spread (1h)": best_pos["Rate"] - best_neg["Rate"],
-            "Spread (1Y)": best_pos["Yearly Rate"] - best_neg["Yearly Rate"]
-
-        })
+        if "reya" in (best_pos["Exchange"].lower(), best_neg["Exchange"].lower()):
+            # # Compare all positive vs negative exchanges
+            # for _, pos in positives.iterrows():
+            #     for _, neg in negatives.iterrows():
+            #         best_results.append({
+            #             "Symbol": symbol,
+            #             "Long Exchange": neg["Exchange"],
+            #             "Long Rate": neg["Rate"],
+            #             "Short Exchange": pos["Exchange"],
+            #             "Short Rate": pos["Rate"],
+            #             "Spread": pos["Rate"] - neg["Rate"]
+            #         })
+            best_results.append({
+                "Symbol": symbol,
+                "Long Exchange": best_neg["Exchange"],
+                "Long Rate (1h)": best_neg["Rate"],
+                "Long Rate (1Y)": best_neg["Yearly Rate"],
+                "Short Exchange": best_pos["Exchange"],
+                "Short Rate (1h)": best_pos["Rate"],
+                "Short Rate (1Y)": best_pos["Yearly Rate"],
+                "Spread (1h)": best_pos["Rate"] - best_neg["Rate"],
+                "Spread (1Y)": best_pos["Yearly Rate"] - best_neg["Yearly Rate"]
+            })
 
         # Compare ALL positives vs negatives
         for _, pos in positives.iterrows():
@@ -258,7 +258,7 @@ try:
 
     with tab1:
         st.subheader("📊 Arbitrage Opportunities")
-        st.markdown("Finds all pairs with the biggest spread between a negative and a positive rate")
+        st.markdown("Finds all pairs with the biggest spread between a negative and a positive rate between reya an another exchange.")
 
         arb_df, arb_df_all = find_best_arbitrage_opportunities(df)
 
