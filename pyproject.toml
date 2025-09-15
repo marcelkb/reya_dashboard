@@ -1,5 +1,5 @@
 [project]
-name = "reya-dashboard"
+name = "reya_dashboard"
 version = "0.1.0"
 description = "Reya Dashboard"
 requires-python = ">=3.11"
@@ -17,3 +17,6 @@ dependencies = [
     "pyarrow",
     "streamlit[charts]"
 ]
+
+[tool.poetry]
+package-mode = false
