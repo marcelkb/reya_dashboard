@@ -1,23 +1,10 @@
-import logging
-from datetime import datetime
 
-import ccxt
-from ccxt_wrapper import Reya
 import streamlit as st
 import pandas as pd
 from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
-import plotly.express as px
-from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
 import plotly.graph_objects as go
-import ccxt
-import asyncio
-import aiohttp
-import json
 from datetime import datetime
-import numpy as np
 import mysql.connector
-
-from pages.exchanges.lighter import Lighter
 
 st.set_page_config(page_title="Funding Rate Heatmap", layout="wide")
 st.title("📊 Funding Rates")
