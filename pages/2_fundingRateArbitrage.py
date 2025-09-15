@@ -1,7 +1,7 @@
 
 import streamlit as st
 import pandas as pd
-from st_aggrid import AgGrid, GridOptionsBuilder, JsCode
+from st_aggrid_copy import AgGrid, GridOptionsBuilder, JsCode
 import plotly.graph_objects as go
 from datetime import datetime
 import mysql.connector
