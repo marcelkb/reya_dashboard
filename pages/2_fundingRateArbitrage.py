@@ -258,7 +258,7 @@ try:
 
     with tab1:
         st.subheader("📊 Arbitrage Opportunities")
-        st.markdown("Finds all pairs with the biggest spread between a negative and a positive rate between reya an another exchange.")
+        st.markdown("Finds all pairs with the biggest spread between a negative and a positive rate between reya and another exchange.")
 
         arb_df, arb_df_all = find_best_arbitrage_opportunities(df)
 
