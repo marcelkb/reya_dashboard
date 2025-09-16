@@ -248,10 +248,10 @@ class ReyaDataCrawler:
         formatted = f"""Arbitrage Opportunity
 🚀 <b>{row['Symbol']}</b>
                 
-📉 <b>Long</b> on <b>{row['Long Exchange']}</b>  
+📈 <b>Long</b> on <b>{row['Long Exchange']}</b>  
 at <b>{row['Long Rate (1h)']:.4f}% (1h)</b> | <b>{row['Long Rate (1Y)']:.2f}% (1Y)</b>
                 
-📈 <b>Short</b> on <b>{row['Short Exchange']}</b>  
+📉 <b>Short</b> on <b>{row['Short Exchange']}</b>  
 at <b>{row['Short Rate (1h)']:.4f}% (1h)</b> | <b>{row['Short Rate (1Y)']:.2f}% (1Y)</b>
 
 🔎 <b>Spread:</b> <b>{row['Spread (1h)']:.4f}% (1h)</b> | <b>{row['Spread (1Y)']:.2f}% (1Y)</b>

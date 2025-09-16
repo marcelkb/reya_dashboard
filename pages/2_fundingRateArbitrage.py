@@ -275,9 +275,9 @@ try:
                                      color:#1a1a1a; font-family:Arial, sans-serif;
                                      box-shadow: 0px 3px 8px rgba(0,0,0,0.12)">
                              <h3 style="margin:0; color:#2c5282;">{row['Symbol']}</h3>
-                             <p style="margin:4px 0;">📉 <b>Long</b> on <b>{row['Long Exchange']}</b> 
+                             <p style="margin:4px 0;">📈 <b>Long</b> on <b>{row['Long Exchange']}</b> 
                                 at <b>{row['Long Rate (1h)']:.4f}% (1h)</b> | <b>{row['Long Rate (1Y)']:.2f}% (1Y)</b></p>
-                             <p style="margin:4px 0;">📈 <b>Short</b> on <b>{row['Short Exchange']}</b> 
+                             <p style="margin:4px 0;">📉 <b>Short</b> on <b>{row['Short Exchange']}</b> 
                                 at <b>{row['Short Rate (1h)']:.4f}% (1h)</b> | <b>{row['Short Rate (1Y)']:.2f}% (1Y)</b></p>
                              <h4 style="margin:8px 0; color:{spread_color};">
                                  Spread: {row['Spread (1h)']:.4f}% (1h) | {row['Spread (1Y)']:.2f}% (1Y)
