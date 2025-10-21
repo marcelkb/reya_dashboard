@@ -106,6 +106,9 @@ class ReyaDataCrawler:
     # Store last sent arbitrages in memory (dict)
     last_sent = {}
 
+    # Track last funding rate summary sent
+    last_funding_summary_sent = None
+
     def __init__(self):
         config = TradingConfig.from_env()
 
@@ -147,12 +150,113 @@ class ReyaDataCrawler:
             try:
                 self.fetching_reya_funding_and_apy()
                 self.fetch_funding_rates()
+
+                # Check if we should send the 30-minute funding summary
+                self.send_funding_summary_if_needed()
+
             except Exception as e:
                 print(f"Error occurred: {e}")
                 time.sleep(5)
                 continue  # dont sleep long
             print("sleep 5min")
             time.sleep(300)
+
+    def send_funding_summary_if_needed(self):
+        """Send a funding rate summary every 30 minutes for BTC, ETH, SOL"""
+        now = datetime.datetime.utcnow()
+
+        # Check if 30 minutes have passed since last summary
+        if self.last_funding_summary_sent is None or \
+                (now - self.last_funding_summary_sent) >= datetime.timedelta(minutes=30):
+
+            try:
+                self.send_funding_summary()
+                self.last_funding_summary_sent = now
+                logging.info("Funding summary sent successfully")
+            except Exception as e:
+                logging.error(f"Error sending funding summary: {e}")
+
+    def send_funding_summary(self):
+        """Fetch and send current funding rates for BTC, ETH, SOL across some exchanges"""
+        top_symbols = ['BTC', 'ETH', 'SOL']
+        SUMMARY_EXCHANGES = {
+            'bybit': self.ALL_EXCHANGES['bybit'],
+            'hyperliquid': self.ALL_EXCHANGES['hyperliquid'],
+            'reya': self.ALL_EXCHANGES['reya'],
+        }
+        summary_data = {symbol: [] for symbol in top_symbols}
+
+        def fetch_single_for_summary(exchange_name, exchange, symbol):
+            try:
+                factor = 100
+                fetch_symbol = f"{symbol}/USDT:USDT"
+
+                if exchange.name == "Hyperliquid":
+                    fetch_symbol = f"{symbol}/USDC:USDC"
+                elif exchange.name == "Reya":
+                    fetch_symbol = f"{symbol}/RUSD:RUSD"
+                    factor = 1
+
+                funding_rate = exchange.fetch_funding_rate(fetch_symbol)
+
+                if funding_rate and 'fundingRate' in funding_rate:
+                    rate = funding_rate['fundingRate']
+                    interval = float((funding_rate.get('interval') or '8').replace("h", ""))
+                    if rate is not None:
+                        return {
+                            'exchange': exchange.name,
+                            'rate_1h': float(rate) * factor / interval,
+                            'rate_1y': (float(rate) / interval) * 24 * factor * 365,
+                        }
+            except Exception as e:
+                logging.error(f"Error fetching {exchange_name} {symbol} for summary: {e}")
+            return None
+
+        # Fetch rates for all exchanges in parallel
+        with ThreadPoolExecutor(max_workers=10) as executor:
+            futures = []
+            for symbol in top_symbols:
+                for exchange_name, exchange in SUMMARY_EXCHANGES.items():
+                    futures.append((symbol, executor.submit(fetch_single_for_summary, exchange_name, exchange, symbol)))
+
+            for symbol, future in futures:
+                result = future.result()
+                if result:
+                    summary_data[symbol].append(result)
+
+        # Format and send message
+        message = self.format_funding_summary(summary_data)
+        if message:
+            self.telegram.sendMessage(message)
+
+    def format_funding_summary(self, summary_data):
+        """Format the funding rate summary into a readable message"""
+        message = "📊 <b>Funding Rate Summary</b>\n"
+        message += f"🕐 {datetime.datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}\n\n"
+
+        for symbol in ['BTC', 'ETH', 'SOL']:
+            rates = summary_data.get(symbol, [])
+            if not rates:
+                continue
+
+            message += f"<b>{symbol}</b>\n"
+
+            # Sort by 1h rate
+            rates_sorted = sorted(rates, key=lambda x: x['rate_1y'], reverse=True)
+
+            for rate_data in rates_sorted:
+                rate_1y = rate_data['rate_1y']
+                exchange = rate_data['exchange']
+
+                # Add emoji based on rate direction
+                emoji = "🔴" if rate_1y < 1 else "🟢" if rate_1y > 1 else "⚪"
+
+                message += f"{emoji} <b>{exchange}</b>: "
+                message += f"{rate_1y:+.2f}% (1Y)\n"
+
+            message += "\n"
+
+        return message if len(summary_data) > 0 else None
 
     def fetching_reya_funding_and_apy(self):
         apy = self.exchange.get_current_stake_apy()
