@@ -186,30 +186,37 @@ class ReyaDataCrawler:
         }
         summary_data = {symbol: [] for symbol in top_symbols}
 
-        def fetch_single_for_summary(exchange_name, exchange, symbol):
-            try:
-                factor = 100
-                fetch_symbol = f"{symbol}/USDT:USDT"
+        def fetch_single_for_summary(exchange_name, exchange, symbol, max_retries=3, retry_delay=1):
+            for attempt in range(max_retries):
+                try:
+                    factor = 100
+                    fetch_symbol = f"{symbol}/USDT:USDT"
 
-                if exchange.name == "Hyperliquid":
-                    fetch_symbol = f"{symbol}/USDC:USDC"
-                elif exchange.name == "Reya":
-                    fetch_symbol = f"{symbol}/RUSD:RUSD"
-                    factor = 1
+                    if exchange.name == "Hyperliquid":
+                        fetch_symbol = f"{symbol}/USDC:USDC"
+                    elif exchange.name == "Reya":
+                        fetch_symbol = f"{symbol}/RUSD:RUSD"
+                        factor = 1
 
-                funding_rate = exchange.fetch_funding_rate(fetch_symbol)
+                    funding_rate = exchange.fetch_funding_rate(fetch_symbol)
 
-                if funding_rate and 'fundingRate' in funding_rate:
-                    rate = funding_rate['fundingRate']
-                    interval = float((funding_rate.get('interval') or '8').replace("h", ""))
-                    if rate is not None:
-                        return {
-                            'exchange': exchange.name,
-                            'rate_1h': float(rate) * factor / interval,
-                            'rate_1y': (float(rate) / interval) * 24 * factor * 365,
-                        }
-            except Exception as e:
-                logging.error(f"Error fetching {exchange_name} {symbol} for summary: {e}")
+                    if funding_rate and 'fundingRate' in funding_rate:
+                        rate = funding_rate['fundingRate']
+                        interval = float((funding_rate.get('interval') or '8').replace("h", ""))
+                        if rate is not None:
+                            return {
+                                'exchange': exchange.name,
+                                'rate_1h': float(rate) * factor / interval,
+                                'rate_1y': (float(rate) / interval) * 24 * factor * 365,
+                            }
+                except Exception as e:
+                    if attempt < max_retries - 1:
+                        logging.warning(
+                            f"Error fetching {exchange_name} {symbol} (attempt {attempt + 1}/{max_retries}): {e}. Retrying in {retry_delay}s...")
+                        time.sleep(retry_delay)
+                    else:
+                        logging.error(f"Error fetching {exchange_name} {symbol} after {max_retries} attempts: {e}")
+
             return None
 
         # Fetch rates for all exchanges in parallel
@@ -249,7 +256,7 @@ class ReyaDataCrawler:
                 exchange = rate_data['exchange']
 
                 # Add emoji based on rate direction
-                emoji = "🔴" if rate_1y < 1 else "🟢" if rate_1y > 1 else "⚪"
+                emoji = "🔴" if rate_1y < -1 else "🟢" if rate_1y > 1 else "⚪"
 
                 message += f"{emoji} <b>{exchange}</b>: "
                 message += f"{rate_1y:+.2f}% (1Y)\n"
