@@ -7,6 +7,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import ccxt
 import pandas as pd
+import requests
 from ccxt_wrapper.Reya import Reya
 from sdk.reya_rest_api import TradingConfig, ReyaTradingClient
 
@@ -15,6 +16,7 @@ from dotenv import load_dotenv
 from Telegram import Telegram
 from pages.exchanges.edgeX import EdgeX
 from pages.exchanges.lighter import Lighter
+from datetime import datetime as dt
 
 # Set up logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
@@ -108,6 +110,8 @@ class ReyaDataCrawler:
 
     # Track last funding rate summary sent
     last_funding_summary_sent = None
+    last_fag = None
+
 
     def __init__(self):
         config = TradingConfig.from_env()
@@ -153,6 +157,7 @@ class ReyaDataCrawler:
 
                 # Check if we should send the 30-minute funding summary
                 self.send_funding_summary_if_needed()
+                self.send_fear_and_greed_and_reya_apy_if_needed()
 
             except Exception as e:
                 print(f"Error occurred: {e}")
@@ -175,6 +180,67 @@ class ReyaDataCrawler:
                 logging.info("Funding summary sent successfully")
             except Exception as e:
                 logging.error(f"Error sending funding summary: {e}")
+
+    def send_fear_and_greed_and_reya_apy_if_needed(self):
+        """Send a funding rate summary every day in the hour 9"""
+        now = datetime.datetime.utcnow()
+
+        if now.hour == 9 or self.last_fag is None:
+            # Check if we haven't sent today yet
+            if self.last_fag is None or \
+                    self.last_fag.date() < now.date():
+                try:
+                    self.send_fear_and_greed_and_reya_apy()
+                    self.last_fag = now
+                    logging.info("fear and greed and reya apy sent successfully")
+                except Exception as e:
+                    logging.error(f"Error sending fear and greed and reya apy: {e}")
+
+    def send_fear_and_greed_and_reya_apy(self):
+        # Define the API endpoint
+        api_url = "https://api.alternative.me/fng/"
+
+        # Set parameters for fetching historical data
+        params = {
+            "limit": 1,  # Number of results to fetch
+            "format": "json",  # Response format
+        }
+
+        try:
+            # Make the API request
+            response = requests.get(api_url, params=params)
+            response.raise_for_status()  # Raise exception for HTTP errors
+
+            # Parse the JSON response
+            data = response.json()
+            entry = data["data"][0]
+
+            datetime = dt.utcfromtimestamp(int(entry["timestamp"]))
+            value = int(entry["value"])
+            value_classification = entry["value_classification"]
+            message = "📊 <b>Fear and Greed Index</b>\n"
+            message += f"🕐 {datetime.strftime('%Y-%m-%d %H:%M UTC')}\n\n"
+            emoji = "🔴" if value < 20 else "🟢" if value > 50 else "🟠"
+            message += f"<b>{emoji} {value} {value_classification}</b>\n"
+            
+            if message:
+                self.telegram.sendMessage(message)
+            
+            #reya apy
+            apy = self.exchange.get_current_stake_apy()
+            stakeApy = round(float(apy['apy']) * 100,2)
+
+            message = "📊 <b>Current Reya APY</b>\n"
+            message += f"🕐 {datetime.utcnow().strftime('%Y-%m-%d %H:%M UTC')}\n\n"
+            emoji = "🔴" if stakeApy < -1 else "🟢" if stakeApy > 1 else "⚪"
+            message += f"<b>{emoji} {stakeApy}%</b>\n"
+
+            if message:
+                self.telegram.sendMessage(message)
+            
+        except requests.exceptions.RequestException as e:
+            print(f"An error occurred: {e}")
+
 
     def send_funding_summary(self):
         """Fetch and send current funding rates for BTC, ETH, SOL across some exchanges"""
