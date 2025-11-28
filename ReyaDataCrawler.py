@@ -182,10 +182,10 @@ class ReyaDataCrawler:
                 logging.error(f"Error sending funding summary: {e}")
 
     def send_fear_and_greed_and_reya_apy_if_needed(self):
-        """Send a funding rate summary every day in the hour 9"""
+        """Send a funding rate summary every day in the hour 8"""
         now = datetime.datetime.utcnow()
 
-        if now.hour == 9 or self.last_fag is None:
+        if (now.hour == 0 and now.min != 0) or self.last_fag is None:
             # Check if we haven't sent today yet
             if self.last_fag is None or \
                     self.last_fag.date() < now.date():
@@ -249,6 +249,7 @@ class ReyaDataCrawler:
             'bybit': self.ALL_EXCHANGES['bybit'],
             'hyperliquid': self.ALL_EXCHANGES['hyperliquid'],
             'reya': self.ALL_EXCHANGES['reya'],
+            'lighter': self.ALL_EXCHANGES['lighter'],
         }
         summary_data = {symbol: [] for symbol in top_symbols}
 
